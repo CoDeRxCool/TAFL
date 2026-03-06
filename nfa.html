@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFA Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Canvas Area -->
+        <main class="canvas-container" id="canvas-container">
+            <svg id="automata-canvas" width="100%" height="100%">
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6"
+                        orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--text-secondary)" />
+                    </marker>
+                    <marker id="arrow-selected" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6"
+                        orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--primary)" />
+                    </marker>
+                    <marker id="arrow-active" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6"
+                        orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#0ea5e9" />
+                    </marker>
+                </defs>
+            </svg>
+        </main>
+
+        <!-- Tools Sidebar -->
+        <aside class="sidebar tools-panel glass">
+            <!-- Navigation -->
+            <div class="nav-tabs">
+                <a href="dfa.html" class="nav-tab">DFA</a>
+                <a href="nfa.html" class="nav-tab active">NFA</a>
+            </div>
+            <h2>NFA Tools</h2>
+            <div class="tool-group">
+                <button id="tool-select" class="tool-btn active" title="Select and Move">
+                    <span class="icon">👆</span> Select
+                </button>
+                <button id="tool-state" class="tool-btn" title="Add State">
+                    <span class="icon">⚪</span> Add State
+                </button>
+                <button id="tool-transition" class="tool-btn" title="Add Transition">
+                    <span class="icon">↗️</span> Add Transition
+                </button>
+            </div>
+
+            <div class="tool-group context-menu" id="state-context-menu" style="display: none;">
+                <h3>State Properties</h3>
+                <input type="text" id="prop-name" placeholder="State name">
+                <label>
+                    <input type="checkbox" id="prop-start"> Start State
+                </label>
+                <label>
+                    <input type="checkbox" id="prop-accept"> Accept State
+                </label>
+                <button id="btn-delete-state" class="danger-btn">Delete State</button>
+            </div>
+
+            <div class="tool-group context-menu" id="transition-context-menu" style="display: none;">
+                <h3>Transition Symbol</h3>
+                <input type="text" id="transition-symbol-input" placeholder="e.g., a, b, ε">
+                <small>Use commas for multiple symbols. Use ε for epsilon.</small>
+                <button id="btn-delete-transition" class="danger-btn">Delete Transition</button>
+            </div>
+
+            <div class="info-box nfa-info">
+                <p id="status-message">NFA Mode: Multiple start states and ε-transitions supported.</p>
+            </div>
+        </aside>
+
+        <!-- Simulation Bottom Panel -->
+        <footer class="bottom-panel sim-panel glass">
+            <div class="sim-controls">
+                <div class="input-group">
+                    <label for="sim-input">Input String:</label>
+                    <input type="text" id="sim-input" placeholder="e.g. 1011">
+                </div>
+
+                <div class="playback-controls">
+                    <button id="btn-reset" class="sim-btn" title="Reset Simulation">⏮️ Reset</button>
+                    <button id="btn-step" class="sim-btn" title="Step Forward">⏭️ Step</button>
+                    <button id="btn-play" class="sim-btn primary" title="Play Simulation">▶️ Play</button>
+                </div>
+
+                <div class="sim-speed">
+                    <label for="speed-slider">Slow</label>
+                    <input type="range" id="speed-slider" min="100" max="2000" value="800" dir="rtl">
+                    <label for="speed-slider">Fast</label>
+                </div>
+            </div>
+
+            <div class="sim-status">
+                <div id="sim-tape" class="tape"></div>
+                <div id="sim-result" class="result-badge"></div>
+            </div>
+        </footer>
+    </div>
+    <script src="nfa.js"></script>
+</body>
+
+</html>

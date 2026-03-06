@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automata Simulator — DFA & NFA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f111a;
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --nfa-accent: #a78bfa;
+            --nfa-glow: rgba(167, 139, 250, 0.4);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a5b5;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --surface: rgba(25, 28, 41, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Glowing orb backgrounds */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: 0;
+            pointer-events: none;
+            animation: orbFloat 8s ease-in-out infinite alternate;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--nfa-glow) 0%, transparent 70%);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 3s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 5s;
+        }
+
+        @keyframes orbFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(30px, -20px) scale(1.1);
+            }
+        }
+
+        /* Layout */
+        .landing {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, #a0a5b5 50%, #6366f1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+            max-width: 800px;
+            width: 100%;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        .card {
+            position: relative;
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 40px 32px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            border-radius: 20px 20px 0 0;
+            transition: height 0.35s ease;
+        }
+
+        .card-dfa::before {
+            background: linear-gradient(90deg, var(--primary), #0ea5e9);
+        }
+
+        .card-nfa::before {
+            background: linear-gradient(90deg, var(--nfa-accent), #f472b6);
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .card:hover::before {
+            height: 4px;
+        }
+
+        .card-dfa:hover {
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.15);
+        }
+
+        .card-nfa:hover {
+            box-shadow: 0 20px 60px rgba(167, 139, 250, 0.15);
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .card-dfa .card-icon {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(14, 165, 233, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .card-nfa .card-icon {
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(244, 114, 182, 0.2));
+            border: 1px solid rgba(167, 139, 250, 0.3);
+        }
+
+        .card h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card-dfa h2 {
+            color: #818cf8;
+        }
+
+        .card-nfa h2 {
+            color: var(--nfa-accent);
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .card-features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 28px;
+        }
+
+        .card-features li {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-features li::before {
+            content: "✓";
+            font-weight: 700;
+            font-size: 0.75rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-dfa .card-features li::before {
+            color: #818cf8;
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .card-nfa .card-features li::before {
+            color: var(--nfa-accent);
+            background: rgba(167, 139, 250, 0.15);
+        }
+
+        .card-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: gap 0.2s ease;
+        }
+
+        .card-dfa .card-cta {
+            color: #818cf8;
+        }
+
+        .card-nfa .card-cta {
+            color: var(--nfa-accent);
+        }
+
+        .card:hover .card-cta {
+            gap: 14px;
+        }
+
+        .card-cta .arrow {
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover .card-cta .arrow {
+            transform: translateX(4px);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            opacity: 0.6;
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 28px 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Ambient glowing orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="landing">
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="hero-badge">Interactive Visualizer</div>
+            <h1>Automata Simulator</h1>
+            <p>Design, visualize, and simulate finite automata step-by-step. Choose your automaton type to get started.
+            </p>
+        </header>
+
+        <!-- Simulator Cards -->
+        <div class="cards">
+            <a href="dfa.html" class="card card-dfa">
+                <div class="card-icon">⚙️</div>
+                <h2>DFA Simulator</h2>
+                <p>Deterministic Finite Automaton — exactly one transition per symbol from each state.</p>
+                <ul class="card-features">
+                    <li>Single active state at any time</li>
+                    <li>One transition per symbol per state</li>
+                    <li>Duplicate transition warnings</li>
+                    <li>Step-by-step visual simulation</li>
+                </ul>
+                <div class="card-cta">
+                    Launch DFA <span class="arrow">→</span>
+                </div>
+            </a>
+
+            <a href="nfa.html" class="card card-nfa">
+                <div class="card-icon">🔀</div>
+                <h2>NFA Simulator</h2>
+                <p>Non-Deterministic Finite Automaton — multiple transitions and ε-moves supported.</p>
+                <ul class="card-features">
+                    <li>Multiple active states simultaneously</li>
+                    <li>Epsilon (ε) transition support</li>
+                    <li>Multiple start states allowed</li>
+                    <li>Active state set visualization</li>
+                </ul>
+                <div class="card-cta">
+                    Launch NFA <span class="arrow">→</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>TAFL Assignment — Finite Automata Visualization Tool</p>
+        </footer>
+    </div>
+</body>
+
+</html>
